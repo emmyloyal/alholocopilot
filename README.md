@@ -87,7 +87,8 @@ Lux3D **Multi-Format Export** produces the channel formats. The export uses the 
 | File | Use |
 |---|---|
 | `model.glb` | Web product pages, 3D viewers, game engines |
-| `model-parts.glb` | Inspection, configurators, exploded diagrams |
+| `model-parts.glb` | The separate parts, stored in assembled position (move them in Blender, configurators) |
+| `model-exploded.glb` | The same parts already pushed apart and named Part 1, Part 2… (built in the browser, no credits) |
 | `model.usdz` | Apple AR Quick Look on iPhone and iPad |
 | `model.obj` | 3D tools (Blender, Maya, 3ds Max) |
 

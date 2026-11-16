@@ -39,6 +39,8 @@ export interface ExportFile {
   note: string;
   /** live mode: direct (time-limited) URL */
   url?: string;
+  /** built in the browser on download: an exploded copy of the split GLB at this URL */
+  explodeFrom?: string;
 }
 
 export interface Project {

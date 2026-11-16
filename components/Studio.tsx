@@ -2,7 +2,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useWorkflow } from "@/lib/useWorkflow";
-import { exportGLB, download } from "@/lib/exporter";
+import { exportExplodedGLB, exportGLB, download } from "@/lib/exporter";
 import { languageName } from "@/lib/intent";
 import { speak, useVoice, VOICE_LANGS } from "@/lib/useVoice";
 import type { ExportFile, ModelState, Step } from "@/lib/types";
@@ -44,6 +44,7 @@ export default function Studio() {
   const [view, setView] = useState<"processed" | "original">("processed");
   const [chat, setChat] = useState("");
   const [voiceLang, setVoiceLang] = useState("auto");
+  const [building, setBuilding] = useState<string | null>(null); // export file being built in the browser
   const send = async (t: string, spoken: boolean) => {
     const r = await wf.sendChat(t);
     if (spoken && r) speak(r.reply, r.language);
@@ -71,6 +72,13 @@ export default function Studio() {
   const viewerBg = THEMES.find((t) => t.id === theme)!.bg;
 
   const downloadFile = async (f: ExportFile) => {
+    if (f.explodeFrom) {
+      setBuilding(f.id);
+      try { download(await exportExplodedGLB(f.explodeFrom), f.name); }
+      catch (e) { alert(`Could not build the exploded model: ${e instanceof Error ? e.message : e}`); }
+      finally { setBuilding(null); }
+      return;
+    }
     if (f.url) { const a = document.createElement("a"); a.href = f.url; a.download = f.name; a.click(); return; }
     if (f.format === "glb") return download(await exportGLB(), f.name);
     const body = f.format === "zip"
@@ -288,7 +296,7 @@ export default function Studio() {
                 <li key={f.id} className="card flex items-center gap-3 p-3">
                   <span className="grid h-9 w-9 place-items-center rounded-lg text-[10px] font-bold uppercase" style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>{f.format}</span>
                   <div className="min-w-0 flex-1"><div className="truncate text-sm">{f.name}</div><div className="muted text-[11px] leading-tight">{f.note}</div></div>
-                  <button onClick={() => downloadFile(f)} className="btn !px-2.5 !py-1.5 !text-xs" aria-label={`Download ${f.name}`}>↓</button>
+                  <button onClick={() => downloadFile(f)} disabled={building === f.id} className="btn !px-2.5 !py-1.5 !text-xs disabled:opacity-60" aria-label={`Download ${f.name}`}>{building === f.id ? "…" : "↓"}</button>
                 </li>
               ))}
             </ul>

@@ -220,7 +220,10 @@ export function useWorkflow() {
             const files: ExportFile[] = real
               ? [
                   ...(meshUrl ? [{ id: "glb", name: "model.glb", format: "glb" as const, note: `Assembled model (${via})`, url: assetUrl(meshUrl) }] : []),
-                  ...(ref.current?.model.baseModelUrl && ref.current.model.modelUrl ? [{ id: "parts", name: "model-parts.glb", format: "glb" as const, note: `Split into separate parts (${via} part split)`, url: assetUrl(ref.current.model.modelUrl) }] : []),
+                  ...(ref.current?.model.baseModelUrl && ref.current.model.modelUrl ? [
+                    { id: "exploded", name: "model-exploded.glb", format: "glb" as const, note: "Parts pushed apart and named Part 1, Part 2… (built in your browser from the split)", explodeFrom: assetUrl(ref.current.model.modelUrl) },
+                    { id: "parts", name: "model-parts.glb", format: "glb" as const, note: `Separate parts, stored in assembled position, so it looks whole until you move them (${via} part split)`, url: assetUrl(ref.current.model.modelUrl) },
+                  ] : []),
                   ...(r.files ?? []).map((f, i) => ({ id: `f${i}`, name: `model.${f.format}`, format: (["usdz", "obj", "zip", "glb"].includes(f.format) ? f.format : "zip") as ExportFile["format"], note: c.mode === "replay" ? `${f.format.toUpperCase()} from the recorded Aholo export` : `Aholo export (${f.format}) — link expires in about 2 hours`, url: assetUrl(f.url) })),
                 ]
               : [

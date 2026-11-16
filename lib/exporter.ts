@@ -1,5 +1,30 @@
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter.js";
-import type { Object3D } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { Box3, Vector3, type Object3D } from "three";
+
+/**
+ * Aholo Part Split returns its parts unnamed and still in their assembled positions, so the file looks
+ * identical to the assembled model in any viewer. This builds a downloadable exploded version in the
+ * browser: each part pushed out from the centre (same rule as the viewer's exploded view) and named "Part N".
+ */
+export async function exportExplodedGLB(srcUrl: string, spread = 0.18): Promise<Blob> {
+  const { scene } = await new GLTFLoader().loadAsync(srcUrl);
+  const box = new Box3().setFromObject(scene);
+  const center = box.getCenter(new Vector3());
+  const reach = box.getSize(new Vector3()).length() * spread;
+  let group: Object3D = scene;
+  for (let d = 0; d < 4 && group.children.length === 1; d++) group = group.children[0];
+  if (group.children.length < 2) throw new Error("This model has no separate parts to explode");
+  group.children.forEach((part, i) => {
+    const dir = new Box3().setFromObject(part).getCenter(new Vector3()).sub(center);
+    if (dir.lengthSq() < 1e-12) dir.set(0, 1, 0);
+    part.position.addScaledVector(dir.normalize(), reach);
+    part.name = `Part ${i + 1}`;
+  });
+  return new Promise((resolve, reject) => {
+    new GLTFExporter().parse(scene, (res) => resolve(new Blob([res as ArrayBuffer], { type: "model/gltf-binary" })), reject, { binary: true, trs: true }); // trs: plain per-part offsets, readable in 3D tools
+  });
+}
 
 let target: Object3D | null = null;
 export const registerExportTarget = (o: Object3D | null) => { target = o; };
