@@ -74,7 +74,7 @@ Lux3D **Material Transfer** applies the chosen finish. The Copilot draws a refer
 
 ### Step 6: Split into parts
 
-Lux3D **Part Split** separates the model into its main components. The exploded view lets a customer (or a product team) inspect each part.
+Lux3D **Part Split** separates the model into its main components, and the viewer shows them pulled apart as soon as the split finishes. Because Part Split stores the parts in their assembled positions, the Copilot also builds a separated copy for download, so the parts appear apart in any 3D viewer.
 
 <img src="docs/screenshots/07-exploded.png" alt="Exploded view after Part Split" width="420">
 
@@ -87,8 +87,8 @@ Lux3D **Multi-Format Export** produces the channel formats. The export uses the 
 | File | Use |
 |---|---|
 | `model.glb` | Web product pages, 3D viewers, game engines |
-| `model-parts.glb` | The separate parts, stored in assembled position (move them in Blender, configurators) |
-| `model-exploded.glb` | The same parts already pushed apart and named Part 1, Part 2… (built in the browser, no credits) |
+| `model-parts.glb` | The parts already pushed apart and named Part 1, Part 2…, so they open separated in any 3D viewer (built in the browser, no credits) |
+| `model-parts-in-place.glb` | The raw Part Split result: the same parts in their assembled positions, to move yourself in Blender or a configurator |
 | `model.usdz` | Apple AR Quick Look on iPhone and iPad |
 | `model.obj` | 3D tools (Blender, Maya, 3ds Max) |
 

@@ -26,6 +26,17 @@ const QC_REGENERATE_BELOW = 0.5;
 /** "yes" in the app's languages. No \b: it does not work after non-Latin letters. */
 const YES = /^\s*(yes|y|yeah|yep|ok|okay|sure|go|go ahead|do it|confirm|s[ií]|oui|ja|sim|da|да|是|好|はい|네|예|نعم|हाँ|haan|evet|tamam)(?=[\s.!,]|$)/i;
 
+/**
+ * Downloads for a Part Split result. Aholo stores the parts in their assembled positions, so the raw file
+ * looks whole in every viewer; "model-parts.glb" is therefore the separated copy built in the browser.
+ */
+export function splitFiles(splitUrl: string, via: string): ExportFile[] {
+  return [
+    { id: "exploded", name: "model-parts.glb", format: "glb", note: "Parts pushed apart and named Part 1, Part 2…: opens separated in any 3D viewer (built in your browser)", explodeFrom: assetUrl(splitUrl) },
+    { id: "parts", name: "model-parts-in-place.glb", format: "glb", note: `Same parts in their assembled positions, to move yourself in Blender or a configurator (${via} part split)`, url: assetUrl(splitUrl) },
+  ];
+}
+
 /** What a chat change would do to the plan, without applying it. null = nothing to re-run. */
 function planChange(p: Project, intent: Intent): { steps: Step[]; credits: number; rerun: string[] } | null {
   let earliest = Infinity;
@@ -220,10 +231,7 @@ export function useWorkflow() {
             const files: ExportFile[] = real
               ? [
                   ...(meshUrl ? [{ id: "glb", name: "model.glb", format: "glb" as const, note: `Assembled model (${via})`, url: assetUrl(meshUrl) }] : []),
-                  ...(ref.current?.model.baseModelUrl && ref.current.model.modelUrl ? [
-                    { id: "exploded", name: "model-exploded.glb", format: "glb" as const, note: "Parts pushed apart and named Part 1, Part 2… (built in your browser from the split)", explodeFrom: assetUrl(ref.current.model.modelUrl) },
-                    { id: "parts", name: "model-parts.glb", format: "glb" as const, note: `Separate parts, stored in assembled position, so it looks whole until you move them (${via} part split)`, url: assetUrl(ref.current.model.modelUrl) },
-                  ] : []),
+                  ...(ref.current?.model.baseModelUrl && ref.current.model.modelUrl ? splitFiles(ref.current.model.modelUrl, via) : []),
                   ...(r.files ?? []).map((f, i) => ({ id: `f${i}`, name: `model.${f.format}`, format: (["usdz", "obj", "zip", "glb"].includes(f.format) ? f.format : "zip") as ExportFile["format"], note: c.mode === "replay" ? `${f.format.toUpperCase()} from the recorded Aholo export` : `Aholo export (${f.format}) — link expires in about 2 hours`, url: assetUrl(f.url) })),
                 ]
               : [
@@ -236,6 +244,8 @@ export function useWorkflow() {
             commit((p) => ({ ...p, model: { ...p.model, ...(r.patch ?? {}), ...(c.mode !== "mock" ? {
               stage, modelUrl: r.modelUrl ?? p.model.modelUrl,
               ...(stage === "material" ? { finish: step.options.finish ?? p.model.finish } : {}),
+              // show the result of Part Split straight away: parts start apart ("Assemble" puts them back)
+              ...(stage === "split" ? { exploded: true } : {}),
               originalModelUrl: stage === "generated" ? (r.modelUrl ?? p.model.modelUrl) : p.model.originalModelUrl,
               // keep the pre-split model for export; any new generate/material result replaces it
               baseModelUrl: stage === "split" ? (p.model.baseModelUrl ?? p.model.modelUrl) : undefined,

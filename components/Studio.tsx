@@ -1,7 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
-import { useWorkflow } from "@/lib/useWorkflow";
+import { splitFiles, useWorkflow } from "@/lib/useWorkflow";
 import { exportExplodedGLB, exportGLB, download } from "@/lib/exporter";
 import { languageName } from "@/lib/intent";
 import { speak, useVoice, VOICE_LANGS } from "@/lib/useVoice";
@@ -62,6 +62,13 @@ export default function Studio() {
   }, [theme]);
 
   const failed = project?.steps.some((s) => s.status === "failed");
+  // Projects exported before the separated parts download existed get it here, replacing the raw parts entry.
+  const files: ExportFile[] = (() => {
+    const list = project?.files ?? [];
+    const m = project?.model;
+    if (!m || m.stage !== "split" || !m.baseModelUrl || !m.modelUrl || list.some((f) => f.explodeFrom)) return list;
+    return [...list.filter((f) => f.id !== "parts"), ...splitFiles(m.modelUrl, wf.mode === "replay" ? "Recorded Aholo run" : "Aholo")];
+  })();
   const doneCount = project?.steps.filter((s) => s.status === "done").length ?? 0;
   const base: ModelState | undefined = project?.model;
   const shown: ModelState | undefined =
@@ -290,9 +297,9 @@ export default function Studio() {
 
         <section className="panel flex flex-col gap-4 p-5">
           <h2 className="font-semibold">Export centre</h2>
-          {project?.files.length ? (
+          {files.length ? (
             <ul className="flex flex-col gap-2">
-              {project.files.map((f) => (
+              {files.map((f) => (
                 <li key={f.id} className="card flex items-center gap-3 p-3">
                   <span className="grid h-9 w-9 place-items-center rounded-lg text-[10px] font-bold uppercase" style={{ background: "var(--accent)", color: "var(--accent-ink)" }}>{f.format}</span>
                   <div className="min-w-0 flex-1"><div className="truncate text-sm">{f.name}</div><div className="muted text-[11px] leading-tight">{f.note}</div></div>
