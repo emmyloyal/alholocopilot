@@ -12,7 +12,7 @@ Offline test of live mode: `node tools/fake-aholo/server.mjs` (port 4010) then s
 AHOLO_API_KEY=test-key AHOLO_BASE_URL=http://localhost:4010/global AHOLO_ASSET_HOSTS=localhost AHOLO_ASSET_TOKEN_URL=http://localhost:4010/global/asset/v1/token
 
 ## Stack
-Next.js 15 (app router), React 19, TypeScript, Tailwind v4 (CSS-variable themes: midnight/paper/aurora, default aurora), React Three Fiber + drei, three.
+Next.js 15 (app router), React 19, TypeScript, Tailwind v4 (CSS-variable themes: midnight/paper/aurora, default paper), React Three Fiber + drei, three.
 
 ## Architecture
 - `lib/intent.ts` — one Intent contract for planner + chat. Local multilingual lexicon (14 languages) fallback; `app/api/copilot/route.ts` uses Google Gemini (GEMINI_API_KEY, model via GEMINI_MODEL, default gemini-3.5-flash with fallback to gemini-flash-lite-latest; Claude via ANTHROPIC_API_KEY as fallback) for any language and for vision QC judged against the brief.

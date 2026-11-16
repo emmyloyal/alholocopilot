@@ -50,7 +50,7 @@ export default function Studio() {
     if (spoken && r) speak(r.reply, r.language);
   };
   const voice = useVoice((t) => { setChat(""); if (!wf.thinking) send(t, true); });
-  const [theme, setTheme] = useState<(typeof THEMES)[number]["id"]>("aurora");
+  const [theme, setTheme] = useState<(typeof THEMES)[number]["id"]>("paper"); // light theme by default; the switcher still offers Midnight and Aurora
 
   useEffect(() => {
     const t = localStorage.getItem("aholo-theme") as typeof theme | null;
@@ -58,7 +58,6 @@ export default function Studio() {
   }, []);
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
-    try { localStorage.setItem("aholo-theme", theme); } catch {}
   }, [theme]);
 
   const failed = project?.steps.some((s) => s.status === "failed");
@@ -107,7 +106,7 @@ export default function Studio() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 rounded-full border p-1" style={{ borderColor: "var(--line)", background: "var(--panel)" }} role="group" aria-label="Theme">
             {THEMES.map((t) => (
-              <button key={t.id} title={t.label} aria-label={`${t.label} theme`} onClick={() => setTheme(t.id)}
+              <button key={t.id} title={t.label} aria-label={`${t.label} theme`} onClick={() => { setTheme(t.id); try { localStorage.setItem("aholo-theme", t.id); } catch {} /* saved only on a real choice, so loading never overwrites it */ }}
                 className="h-6 w-6 rounded-full" style={{ background: t.dot, outline: theme === t.id ? "2px solid var(--text)" : "none", outlineOffset: 2 }} />
             ))}
           </div>
